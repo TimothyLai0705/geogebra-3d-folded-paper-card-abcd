@@ -1,39 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GeoGebra 3D Calculator - Paper Card ABCD</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoGebra 3D Calculator - Paper Card ABCD (Vertex D on Ground)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
   <style>
     * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      overflow: hidden; font-family: 'Roboto', sans-serif; background: #fff; color: #333;
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+      background-color: #ffffff;
+      color: #333333;
       user-select: none;
     }
-    .math-font { font-family: 'STIX Two Text', 'Cambria Math', serif; }
-    .ggb-purple { background-color: #6557D2; }
-    .ggb-border { border-color: #e0e0e0; }
-    #algebra-panel { transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease; }
+    .math-font {
+      font-family: 'STIX Two Text', 'Cambria Math', serif;
+    }
+    .ggb-purple {
+      background-color: #6557D2;
+    }
+    .ggb-border {
+      border-color: #e0e0e0;
+    }
+    #algebra-panel {
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #c5c5c5; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb {
+      background: #c5c5c5;
+      border-radius: 4px;
+    }
     ::-webkit-scrollbar-thumb:hover { background: #a5a5a5; }
   </style>
 </head>
 <body class="relative w-full h-full bg-white flex flex-col">
+
+  <!-- GeoGebra Top Header Bar -->
   <header class="h-12 w-full ggb-purple text-white flex items-center justify-between px-3 z-30 shadow-sm shrink-0">
     <div class="flex items-center gap-2">
+      <!-- Toggle Algebra Sidebar Button -->
       <button id="btn-toggle-sidebar" title="Toggle Algebra View" class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 transition active:scale-95">
         <i class="fa-solid fa-bars text-lg"></i>
       </button>
+      
+      <!-- GeoGebra Logo & Title -->
       <div class="flex items-center gap-2 pl-1">
         <svg class="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
           <ellipse cx="12" cy="12" rx="10" ry="5.5" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-30 12 12)" />
@@ -42,13 +65,23 @@
           <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
         </svg>
         <span class="font-medium text-[15px] tracking-wide hidden sm:inline">GeoGebra 3D Calculator</span>
-        <span class="text-xs px-2 py-0.5 rounded bg-white/20 ml-1 text-white/90 hidden md:inline">Paper Card $ABCD$ &amp; Horizontal Ground</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-white/20 ml-1 text-white/90 hidden md:inline">Paper Card $ABCD$ &bull; Vertex $D$ on Ground</span>
       </div>
     </div>
 
+    <!-- GeoGebra Standard Tools Toolbar -->
     <div class="flex items-center gap-0.5 sm:gap-1">
       <button id="tool-select" class="w-9 h-9 rounded flex items-center justify-center bg-white/20 hover:bg-white/30 text-white transition" title="Move / Rotate">
         <i class="fa-solid fa-arrow-pointer text-sm"></i>
+      </button>
+      <button class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition hidden xs:flex" title="Point">
+        <span class="w-2.5 h-2.5 rounded-full bg-white border border-slate-700"></span>
+      </button>
+      <button class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition hidden sm:flex" title="Segment">
+        <i class="fa-solid fa-slash text-xs"></i>
+      </button>
+      <button class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition hidden sm:flex" title="Polygon">
+        <i class="fa-solid fa-draw-polygon text-xs"></i>
       </button>
       <button class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition hidden md:flex" title="Angle">
         <i class="fa-solid fa-chart-pie text-xs"></i>
@@ -58,6 +91,7 @@
       </button>
     </div>
 
+    <!-- Right Quick Actions -->
     <div class="flex items-center gap-1.5">
       <button id="btn-toggle-algebra-quick" class="text-xs font-medium px-2.5 py-1 rounded bg-white/15 hover:bg-white/25 flex items-center gap-1.5 transition">
         <i class="fa-solid fa-square-root-variable text-[11px]"></i>
@@ -69,25 +103,49 @@
     </div>
   </header>
 
+  <!-- Main Workspace -->
   <main class="relative flex-1 w-full h-[calc(100%-3rem)] overflow-hidden">
+
+    <!-- 3D WebGL Canvas Container -->
     <div id="webgl-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing bg-white"></div>
+
+    <!-- Math Vertex Billboard Labels Overlay -->
     <div id="labels-overlay" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
 
+    <!-- Floating GeoGebra 3D Action Tools (Bottom-Right) -->
     <div class="absolute right-4 bottom-5 flex flex-col gap-2 z-20">
       <div class="bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.18)] border border-gray-200 overflow-hidden flex flex-col divide-y divide-gray-100">
-        <button id="btn-zoom-in" title="Zoom In" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-plus text-xs"></i></button>
-        <button id="btn-zoom-out" title="Zoom Out" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-minus text-xs"></i></button>
-        <button id="btn-view-home" title="Figure 3 Perspective" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-house text-xs"></i></button>
-        <button id="btn-view-profile" title="Side Profile (Dihedral 38° Angle)" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-eye text-xs"></i></button>
-        <button id="btn-view-top" title="Top Plan View" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-cubes-stacked text-xs"></i></button>
+        <button id="btn-zoom-in" title="Zoom In" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+        <button id="btn-zoom-out" title="Zoom Out" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition">
+          <i class="fa-solid fa-minus text-xs"></i>
+        </button>
+        <button id="btn-view-home" title="Figure Perspective" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition">
+          <i class="fa-solid fa-house text-xs"></i>
+        </button>
+        <button id="btn-view-profile" title="Side Profile (Dihedral Angle)" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition">
+          <i class="fa-solid fa-eye text-xs"></i>
+        </button>
+        <button id="btn-view-top" title="Top Plan View" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition">
+          <i class="fa-solid fa-cubes-stacked text-xs"></i>
+        </button>
       </div>
+
       <div class="bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.18)] border border-gray-200 overflow-hidden flex flex-col divide-y divide-gray-100">
-        <button id="btn-toggle-grid" title="Toggle Grid Plane" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition"><i class="fa-solid fa-border-all text-xs"></i></button>
-        <button id="btn-toggle-axes" title="Toggle Coordinate Axes" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition"><i class="fa-solid fa-arrows-up-down-left-right text-xs"></i></button>
+        <button id="btn-toggle-grid" title="Toggle Grid Plane" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition">
+          <i class="fa-solid fa-border-all text-xs"></i>
+        </button>
+        <button id="btn-toggle-axes" title="Toggle Coordinate Axes" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition">
+          <i class="fa-solid fa-arrows-up-down-left-right text-xs"></i>
+        </button>
       </div>
     </div>
 
+    <!-- Authentic GeoGebra Collapsible Algebra Sidebar (Hidden by Default) -->
     <aside id="algebra-panel" class="absolute top-0 left-0 bottom-0 w-88 max-w-[85vw] bg-white border-r ggb-border shadow-xl z-25 flex flex-col -translate-x-full opacity-0 pointer-events-none">
+      
+      <!-- Panel Header Tabs -->
       <div class="h-10 border-b ggb-border flex items-center justify-between px-3 bg-gray-50/80">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-[#6557D2]"></span>
@@ -98,158 +156,281 @@
         </button>
       </div>
 
+      <!-- Search / Input Expression Simulation -->
       <div class="p-2 border-b ggb-border bg-white flex items-center gap-2 text-xs text-gray-400">
         <i class="fa-solid fa-plus text-gray-400 pl-1"></i>
         <span class="italic text-gray-400">Input...</span>
       </div>
 
+      <!-- Algebra Object List -->
       <div class="flex-1 overflow-y-auto divide-y divide-gray-100 text-xs">
-        <div class="p-3 bg-emerald-50/50 hover:bg-emerald-50/80 transition">
+
+        <!-- Question (c)(iii) Claim Result Card -->
+        <div class="p-3 bg-rose-50/50 hover:bg-rose-50/80 transition">
           <div class="flex items-center justify-between">
-            <span class="font-semibold text-emerald-800 math-font text-sm flex items-center gap-1.5">
-              <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
-              &theta; = &ang;DFD' &approx; 33.91&deg;
+            <span class="font-semibold text-rose-800 math-font text-sm flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-rose-600 inline-block"></span>
+              &theta;<sub>AB</sub> &approx; 29.25&deg; (&le; 30&deg;)
             </span>
-            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Claim Correct</span>
+            <span class="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded font-bold">Disagree</span>
           </div>
           <p class="text-gray-600 text-[11px] mt-1.5 leading-relaxed">
-            The angle between edge $CD$ and the horizontal ground is $94 DFD'  a0 a0$.
+            The inclination of edge $AB$ to the horizontal ground is $\arcsin\left(\frac{h_B - h_A}{AB}\right) \approx 29.25^\circ$. Since $29.25^\circ \le 30^\circ$, the claim is <strong>incorrect</strong> (Do not agree).
           </p>
         </div>
 
+        <!-- Question (c)(ii) Card Inclination to Ground -->
         <div class="p-3 bg-indigo-50/60 hover:bg-indigo-50/90 transition border-l-2 border-indigo-500">
           <div class="flex items-center justify-between">
             <span class="font-semibold text-indigo-900 math-font text-xs flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block"></span>
-              Extension Method: $CD \cap AB = F$
+              Dihedral Inclination &phi; &approx; 54.38&deg;
             </span>
-            <span class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold">Your Method</span>
+            <span class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold">c(ii)</span>
           </div>
           <div class="text-gray-700 text-[11px] mt-1.5 space-y-1">
-            <p>1. Produce $AB$ and $DC$ to meet at $F$.</p>
-            <p class="pl-2 font-mono text-[10.5px] text-indigo-950">&ang;AFD = 180&deg; - 45&deg; - 70&deg; = <strong>65&deg;</strong></p>
-            <p>2. By Sine Rule in $\triangle ADF$</p>
-            <p class="pl-2 font-mono text-[10.5px] text-indigo-950">DF = 80 &times; sin 45&deg; / sin 65&deg; &approx; <strong>62.42 cm</strong></p>
+            <p>1. In $\triangle ADC$, $\angle ADC \approx 100.55^\circ$.</p>
+            <p>2. Azimuth difference on ground: $\cos \Delta\alpha \approx -0.600 \implies \Delta\alpha \approx 126.84^\circ$.</p>
+            <p>3. Angle between card plane $ABCD$ and the horizontal ground:</p>
+            <p class="pl-2 font-mono text-[10.5px] text-indigo-950">
+              cos &phi; = |n<sub>z</sub>| &approx; 0.5823 &implies; <strong>&phi; &approx; 54.38&deg; (or 54.4&deg;)</strong>
+            </p>
           </div>
         </div>
 
+        <!-- Question (c)(i) Heights Comparison -->
         <div class="p-3 bg-blue-50/40 hover:bg-blue-50/70 transition">
           <div class="flex items-center justify-between">
             <span class="font-semibold text-blue-700 math-font text-sm flex items-center gap-1.5">
               <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
-              <i>d</i>(D, Ground) = 34.83 cm
+              Vertex <i>C</i> is closer to Ground
             </span>
-            <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">b(i)</span>
+            <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">c(i)</span>
           </div>
-          <p class="text-gray-500 text-[11px] mt-1">$h_D = AD \sin 45^\circ \times \sin 38^\circ = 40\sqrt{2} \sin 38^\circ \approx 34.83\text{ cm}$.</p>
+          <div class="text-gray-600 text-[11px] mt-1 space-y-0.5">
+            <p>• Distance from $A$ to ground: $h_A = 18\sin 39^\circ \approx <strong>11.33\text{ cm}</strong>$.</p>
+            <p>• Distance from $C$ to ground: $h_C = 12\sin 23^\circ \approx <strong>4.69\text{ cm}</strong>$.</p>
+            <p class="font-medium text-blue-900 mt-1">Since $4.69\text{ cm} < 11.33\text{ cm}$, vertex $C$ is closer.</p>
+          </div>
         </div>
 
-        <div class="p-3 space-y-2 bg-gray-50/50">
-          <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Vertices &amp; Key Coordinates</span>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-700">A</span><span>(0.00, 0.00, 0.00)</span></div>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">B</span><span>(50.00, 0.00, 0.00)</span></div>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">C</span><span>(71.18, 15.54, 19.89)</span></div>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">D</span><span>(56.57, 34.83, 44.58)</span></div>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-amber-700">D' (Foot on ground)</span><span>(56.57, 0.00, 44.58)</span></div>
-          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-indigo-300 bg-indigo-50/40"><span class="math-font font-semibold text-indigo-700">F (Intersection on ground)</span><span>(82.95, 0.00, 0.00)</span></div>
+        <!-- Question (a) Angle ADC -->
+        <div class="p-3 hover:bg-purple-50/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-purple-700 math-font text-sm flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
+              &ang;ADC &approx; 100.55&deg;
+            </span>
+            <span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-mono">(a)</span>
+          </div>
+          <p class="text-gray-500 text-[11px] mt-1">
+            $AC = \sqrt{28^2 + 25^2 - 2(28)(25)\cos 52^\circ} \approx 23.39\text{ cm}$.<br>
+            $\cos \angle ADC = \frac{18^2 + 12^2 - 23.39^2}{2(18)(12)} \approx -0.1830 \implies \angle ADC \approx 100.55^\circ$.
+          </p>
         </div>
+
+        <!-- Question (b) Variation of Area of Triangle ACD -->
+        <div class="p-3 hover:bg-amber-50/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-amber-800 math-font text-sm flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+              Area(&Delta;ACD) First Increases, Then Decreases
+            </span>
+            <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono">(b)</span>
+          </div>
+          <p class="text-gray-500 text-[11px] mt-1 leading-relaxed">
+            As $\angle ABC$ drops from $52^\circ$ to $32^\circ$, $AC$ decreases, causing $\angle ADC$ to decrease from $100.55^\circ$ past $90^\circ$ to $55.24^\circ$. Since $\sin \angle ADC$ peaks at $90^\circ$, the area first increases to $108\text{ cm}^2$ and then decreases.
+          </p>
+        </div>
+
+        <!-- 3D Points in GeoGebra coordinate format -->
+        <div class="p-3 space-y-2 bg-gray-50/50">
+          <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">3D Coordinates (Ground at Y = 0)</span>
+          
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200">
+            <span class="math-font font-semibold text-emerald-700">D (Touches ground)</span>
+            <span>(0.00, 0.00, 0.00)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200">
+            <span class="math-font font-semibold text-blue-700">A</span>
+            <span id="coord-A">(...)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200">
+            <span class="math-font font-semibold text-blue-700">B</span>
+            <span id="coord-B">(...)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200">
+            <span class="math-font font-semibold text-blue-700">C</span>
+            <span id="coord-C">(...)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-amber-300 bg-amber-50/40">
+            <span class="math-font font-semibold text-amber-700">A' (Ground projection)</span>
+            <span id="coord-Aprime">(...)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-amber-300 bg-amber-50/40">
+            <span class="math-font font-semibold text-amber-700">C' (Ground projection)</span>
+            <span id="coord-Cprime">(...)</span>
+          </div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-amber-300 bg-amber-50/40">
+            <span class="math-font font-semibold text-amber-700">B' (Ground projection)</span>
+            <span id="coord-Bprime">(...)</span>
+          </div>
+        </div>
+
+        <!-- Measurements Reference -->
+        <div class="p-3 text-[11px] text-gray-600 space-y-1">
+          <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Measurements</span>
+          <div class="flex justify-between"><span>AB:</span><strong class="font-mono">28.0 cm</strong></div>
+          <div class="flex justify-between"><span>BC:</span><strong class="font-mono">25.0 cm</strong></div>
+          <div class="flex justify-between"><span>CD:</span><strong class="font-mono">12.0 cm</strong></div>
+          <div class="flex justify-between"><span>AD:</span><strong class="font-mono">18.0 cm</strong></div>
+          <div class="flex justify-between"><span>AC (diagonal):</span><strong class="font-mono">23.39 cm</strong></div>
+          <div class="flex justify-between"><span>h<sub>A</sub> (AA'):</span><strong class="font-mono">11.33 cm</strong></div>
+          <div class="flex justify-between"><span>h<sub>C</sub> (CC'):</span><strong class="font-mono">4.69 cm</strong></div>
+          <div class="flex justify-between"><span>h<sub>B</sub> (BB'):</span><strong class="font-mono">25.01 cm</strong></div>
+          <div class="flex justify-between"><span>Angle AD to ground:</span><strong class="font-mono">39.0&deg;</strong></div>
+          <div class="flex justify-between"><span>Angle CD to ground:</span><strong class="font-mono">23.0&deg;</strong></div>
+          <div class="flex justify-between"><span>Angle AB to ground:</span><strong class="font-mono">29.25&deg; (&le; 30&deg;)</strong></div>
+        </div>
+
       </div>
     </aside>
 
+    <!-- Floating bottom hint pill -->
     <div class="absolute left-4 bottom-4 z-20 pointer-events-none">
       <div class="bg-white/90 backdrop-blur border border-gray-200 px-3 py-1.5 rounded-md shadow-sm text-[11px] text-gray-600 flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-[#6557D2]"></span>
-        <span>Left-click &amp; drag to rotate &bull; Right-click to pan &bull; Scroll to zoom</span>
+        <span>Left-click & drag to rotate &bull; Right-click to pan &bull; Scroll to zoom</span>
       </div>
     </div>
+
   </main>
 
   <script>
-    const AB_len = 50.0;
-    const AD_len = 80.0;
-    const angleBAD_deg = 45.0;
-    const angleBAD_rad = angleBAD_deg * (Math.PI / 180.0);
-    const angleADC_deg = 70.0;
-    const angleBCD_deg = 115.0;
+    // Problem parameters for Question 19:
+    const AB_len = 28.0;
+    const BC_len = 25.0;
+    const CD_len = 12.0;
+    const AD_len = 18.0;
 
-    const BD_sq = AB_len * AB_len + AD_len * AD_len - 2.0 * AB_len * AD_len * Math.cos(angleBAD_rad);
-    const BD_len = Math.sqrt(BD_sq);
+    const angleABC_deg = 52.0;
+    const angleABC_rad = angleABC_deg * (Math.PI / 180.0);
 
-    const cosADB = (AD_len * AD_len + BD_sq - AB_len * AB_len) / (2.0 * AD_len * BD_len);
-    const angleADB_rad = Math.acos(cosADB);
-    const angleADB_deg = angleADB_rad * (180.0 / Math.PI);
+    // Diagonal AC in triangle ABC:
+    const AC_sq = AB_len * AB_len + BC_len * BC_len - 2.0 * AB_len * BC_len * Math.cos(angleABC_rad);
+    const AC_len = Math.sqrt(AC_sq); // ~ 23.3896 cm
 
-    const angleBDC_deg = angleADC_deg - angleADB_deg;
-    const angleBDC_rad = angleBDC_deg * (Math.PI / 180.0);
-    const angleBCD_rad = angleBCD_deg * (Math.PI / 180.0);
-    const angleDBC_deg = 180.0 - angleBCD_deg - angleBDC_deg;
-    const angleDBC_rad = angleDBC_deg * (Math.PI / 180.0);
+    // Triangle ADC:
+    const cosADC = (AD_len * AD_len + CD_len * CD_len - AC_sq) / (2.0 * AD_len * CD_len);
+    const angleADC_rad = Math.acos(cosADC);
+    const angleADC_deg = angleADC_rad * (180.0 / Math.PI); // ~ 100.5482 deg
 
-    const BC_len = (BD_len * Math.sin(angleBDC_rad)) / Math.sin(angleBCD_rad);
-    const CD_len = (BD_len * Math.sin(angleDBC_rad)) / Math.sin(angleBCD_rad);
+    // Angles of inclination with horizontal ground:
+    const angleAD_ground_deg = 39.0;
+    const angleAD_ground_rad = angleAD_ground_deg * (Math.PI / 180.0);
+    const height_A = AD_len * Math.sin(angleAD_ground_rad); // ~ 11.3278 cm
 
-    const tilt_deg = 38.0;
-    const tilt_rad = tilt_deg * (Math.PI / 180.0);
+    const angleCD_ground_deg = 23.0;
+    const angleCD_ground_rad = angleCD_ground_deg * (Math.PI / 180.0);
+    const height_C = CD_len * Math.sin(angleCD_ground_rad); // ~ 4.6888 cm
 
-    const D_local_x = AD_len * Math.cos(angleBAD_rad);
-    const D_local_y = AD_len * Math.sin(angleBAD_rad);
+    // Azimuth separation between AD and CD on ground:
+    // cos(angleADC) = cos(39)cos(23)cos(Delta_alpha) + sin(39)sin(23)
+    const cos39 = Math.cos(angleAD_ground_rad);
+    const sin39 = Math.sin(angleAD_ground_rad);
+    const cos23 = Math.cos(angleCD_ground_rad);
+    const sin23 = Math.sin(angleCD_ground_rad);
 
-    const angleBC_ray_deg = 50.0;
-    const angleBC_ray_rad = angleBC_ray_deg * (Math.PI / 180.0);
-    const C_local_x = AB_len + BC_len * Math.cos(angleBC_ray_rad);
-    const C_local_y = BC_len * Math.sin(angleBC_ray_rad);
+    const cosDeltaAlpha = (cosADC - sin39 * sin23) / (cos39 * cos23);
+    const deltaAlpha_rad = Math.acos(Math.max(-1, Math.min(1, cosDeltaAlpha))); // ~ 126.839 deg
+    const deltaAlpha_deg = deltaAlpha_rad * (180.0 / Math.PI);
 
-    const height_D = D_local_y * Math.sin(tilt_rad);
-    const height_C = C_local_y * Math.sin(tilt_rad);
+    // Dihedral inclination of card plane ABCD to ground:
+    const sinDeltaAlpha = Math.sin(deltaAlpha_rad);
+    const sinADC = Math.sin(angleADC_rad);
+    const cosDihedral = (cos23 * cos39 * sinDeltaAlpha) / sinADC;
+    const dihedral_rad = Math.acos(Math.max(0, Math.min(1, cosDihedral)));
+    const dihedral_deg = dihedral_rad * (180.0 / Math.PI); // ~ 54.38 deg
 
-    const deltaHeight_CD = height_D - height_C;
-    const sinThetaCD = deltaHeight_CD / CD_len;
-    const thetaCD_rad = Math.asin(sinThetaCD);
-    const thetaCD_deg = thetaCD_rad * (180.0 / Math.PI);
+    // 3D Coordinates with D at origin (0, 0, 0):
+    const D_POS = new THREE.Vector3(0, 0, 0);
 
-    const angleAFD_deg = 65.0;
-    const angleAFD_rad = angleAFD_deg * (Math.PI / 180.0);
-    const AF_len = (AD_len * Math.sin(angleADC_deg * Math.PI / 180.0)) / Math.sin(angleAFD_rad);
-    const DF_len = (AD_len * Math.sin(angleBAD_rad)) / Math.sin(angleAFD_rad);
+    const C_POS = new THREE.Vector3(
+      CD_len * cos23,
+      height_C,
+      0
+    );
 
-    const centerOffsetX = 45.0;
-    const centerOffsetZ = 20.0;
+    const A_POS = new THREE.Vector3(
+      AD_len * cos39 * Math.cos(deltaAlpha_rad),
+      height_A,
+      AD_len * cos39 * Math.sin(deltaAlpha_rad)
+    );
 
-    const A_POS = new THREE.Vector3(0 - centerOffsetX, 0, 0 - centerOffsetZ);
-    const B_POS = new THREE.Vector3(AB_len - centerOffsetX, 0, 0 - centerOffsetZ);
-    const C_POS = new THREE.Vector3(C_local_x - centerOffsetX, height_C, C_local_y * Math.cos(tilt_rad) - centerOffsetZ);
-    const D_POS = new THREE.Vector3(D_local_x - centerOffsetX, height_D, D_local_y * Math.cos(tilt_rad) - centerOffsetZ);
-    const F_POS = new THREE.Vector3(AF_len - centerOffsetX, 0, 0 - centerOffsetZ);
-    const D0_POS = new THREE.Vector3(D_local_x - centerOffsetX, 0, 0 - centerOffsetZ);
-    const C_PROJ = new THREE.Vector3(C_POS.x, 0, C_POS.z);
-    const D_PROJ = new THREE.Vector3(D_POS.x, 0, D_POS.z);
-    const C_LEVEL_D = new THREE.Vector3(D_POS.x, height_C, D_POS.z);
+    // Solve for vertex B in 3D:
+    const A_local_x = AD_len * cosADC;
+    const A_local_y = AD_len * sinADC;
+
+    const coeffX = 2.0 * A_local_x - 24.0;
+    const coeffY = 2.0 * A_local_y;
+    const mSlope = -coeffX / coeffY;
+    const cConst = 21.0 / coeffY;
+
+    const qa = 1.0 + mSlope * mSlope;
+    const qb = -24.0 + 2.0 * mSlope * cConst;
+    const qc = 144.0 + cConst * cConst - 625.0;
+    const disc = Math.sqrt(Math.max(0, qb * qb - 4.0 * qa * qc));
+    const B_local_x = (-qb + disc) / (2.0 * qa);
+    const B_local_y = mSlope * B_local_x + cConst;
+
+    // Unit vectors in card plane:
+    const e1 = new THREE.Vector3().subVectors(C_POS, D_POS).divideScalar(CD_len);
+    const uA = new THREE.Vector3().subVectors(A_POS, D_POS).divideScalar(AD_len);
+    const e2 = new THREE.Vector3().subVectors(uA, e1.clone().multiplyScalar(cosADC)).divideScalar(sinADC);
+
+    const B_POS = new THREE.Vector3()
+      .addScaledVector(e1, B_local_x)
+      .addScaledVector(e2, B_local_y);
+
+    const height_B = B_POS.y; // ~ 25.01 cm
+
+    // Inclination of AB to ground:
+    const sinThetaAB = Math.abs(height_B - height_A) / AB_len;
+    const thetaAB_rad = Math.asin(sinThetaAB);
+    const thetaAB_deg = thetaAB_rad * (180.0 / Math.PI); // ~ 29.25 deg
+
+    // Center offset to balance rotation around origin:
+    const centerOffset = new THREE.Vector3(8.0, height_B * 0.42, 6.0);
+
+    A_POS.sub(centerOffset);
+    B_POS.sub(centerOffset);
+    C_POS.sub(centerOffset);
+    D_POS.sub(centerOffset);
+
+    // Projections onto horizontal ground (Y = -centerOffset.y):
+    const groundY = -centerOffset.y;
+    const D_PROJ = new THREE.Vector3(D_POS.x, groundY, D_POS.z);
+    const A_PROJ = new THREE.Vector3(A_POS.x, groundY, A_POS.z);
+    const B_PROJ = new THREE.Vector3(B_POS.x, groundY, B_POS.z);
+    const C_PROJ = new THREE.Vector3(C_POS.x, groundY, C_POS.z);
+
+    // Horizontal level point from A towards B for inclination triangle:
+    const A_LEVEL_B = new THREE.Vector3(B_POS.x, A_POS.y, B_POS.z);
 
     let scene, camera, renderer, controls;
     const container = document.getElementById('webgl-container');
     const overlay = document.getElementById('labels-overlay');
+
     const gridGroup = new THREE.Group();
     const axesGroup = new THREE.Group();
     const modelGroup = new THREE.Group();
-
-    function setCameraView(mode) {
-      if (mode === 'figure3') {
-        camera.position.set(60, 38, 80);
-      } else if (mode === 'profile') {
-        camera.position.set(100, 20, 5);
-      } else if (mode === 'top') {
-        camera.position.set(0, 120, 0.001);
-      }
-      controls.target.set(0, height_D * 0.35, 0);
-      controls.update();
-    }
 
     function initThree() {
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0xffffff);
 
       camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 1000);
-      setCameraView('figure3');
+      setCameraView('figure');
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -259,13 +440,13 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
-      controls.target.set(0, height_D * 0.35, 0);
+      controls.target.set(0, 0, 0);
 
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
       scene.add(ambientLight);
 
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.45);
-      dirLight.position.set(50, 90, 50);
+      dirLight.position.set(40, 70, 50);
       scene.add(dirLight);
 
       scene.add(gridGroup);
@@ -277,28 +458,31 @@
       buildPaperCardGeometry();
       buildLabels();
       bindUI();
+      updateCoordinatesDisplay();
     }
 
     function createGeoGebraGrid() {
-      const size = 70;
+      const size = 50;
       const stepMajor = 10;
       const stepMinor = 2;
 
+      // Minor grid lines
       const minorPts = [];
       for (let i = -size; i <= size; i += stepMinor) {
         if (i % stepMajor !== 0) {
-          minorPts.push(new THREE.Vector3(i, 0, -size), new THREE.Vector3(i, 0, size));
-          minorPts.push(new THREE.Vector3(-size, 0, i), new THREE.Vector3(size, 0, i));
+          minorPts.push(new THREE.Vector3(i, groundY, -size), new THREE.Vector3(i, groundY, size));
+          minorPts.push(new THREE.Vector3(-size, groundY, i), new THREE.Vector3(size, groundY, i));
         }
       }
       const geomMinor = new THREE.BufferGeometry().setFromPoints(minorPts);
       const matMinor = new THREE.LineBasicMaterial({ color: 0xf0f0f0, linewidth: 1 });
       gridGroup.add(new THREE.LineSegments(geomMinor, matMinor));
 
+      // Major grid lines
       const majorPts = [];
       for (let i = -size; i <= size; i += stepMajor) {
-        majorPts.push(new THREE.Vector3(i, 0, -size), new THREE.Vector3(i, 0, size));
-        majorPts.push(new THREE.Vector3(-size, 0, i), new THREE.Vector3(size, 0, i));
+        majorPts.push(new THREE.Vector3(i, groundY, -size), new THREE.Vector3(i, groundY, size));
+        majorPts.push(new THREE.Vector3(-size, groundY, i), new THREE.Vector3(size, groundY, i));
       }
       const geomMajor = new THREE.BufferGeometry().setFromPoints(majorPts);
       const matMajor = new THREE.LineBasicMaterial({ color: 0xd8d8d8, linewidth: 1 });
@@ -306,33 +490,37 @@
     }
 
     function createGeoGebraAxes() {
-      const axisLen = 65;
+      const axisLen = 45;
       const axisColor = 0x555555;
+
       function addAxis(from, to) {
         const geom = new THREE.BufferGeometry().setFromPoints([from, to]);
         const mat = new THREE.LineBasicMaterial({ color: axisColor, linewidth: 2 });
         axesGroup.add(new THREE.Line(geom, mat));
       }
-      addAxis(new THREE.Vector3(-axisLen, 0, 0), new THREE.Vector3(axisLen, 0, 0));
-      addAxis(new THREE.Vector3(0, 0, -axisLen), new THREE.Vector3(0, 0, axisLen));
-      addAxis(new THREE.Vector3(0, -2, 0), new THREE.Vector3(0, height_D + 12, 0));
+
+      addAxis(new THREE.Vector3(-axisLen, groundY, 0), new THREE.Vector3(axisLen, groundY, 0));
+      addAxis(new THREE.Vector3(0, groundY, -axisLen), new THREE.Vector3(0, groundY, axisLen));
+      addAxis(new THREE.Vector3(0, groundY - 2, 0), new THREE.Vector3(0, height_B + 5, 0));
     }
 
-    function makeGgbPoint(pos, colorHex = 0x1E88E5, radius = 0.85) {
-      const g = new THREE.Group();
+    function makeGgbPoint(pos, colorHex = 0x1E88E5, radius = 0.75) {
+      const group = new THREE.Group();
       const geom = new THREE.SphereGeometry(radius, 20, 20);
       const mat = new THREE.MeshBasicMaterial({ color: colorHex });
       const sphere = new THREE.Mesh(geom, mat);
+
       const edgeGeom = new THREE.SphereGeometry(radius * 1.08, 12, 12);
       const edgeMat = new THREE.MeshBasicMaterial({ color: 0x222222, wireframe: true, transparent: true, opacity: 0.35 });
       const edge = new THREE.Mesh(edgeGeom, edgeMat);
-      g.add(sphere);
-      g.add(edge);
-      g.position.copy(pos);
-      return g;
+
+      group.add(sphere);
+      group.add(edge);
+      group.position.copy(pos);
+      return group;
     }
 
-    function makeSolidEdge(p1, p2, colorHex = 0x222222, thickness = 0.24) {
+    function makeSolidEdge(p1, p2, colorHex = 0x222222, thickness = 0.22) {
       const dir = new THREE.Vector3().subVectors(p2, p1);
       const len = dir.length();
       const geom = new THREE.CylinderGeometry(thickness, thickness, len, 16);
@@ -343,22 +531,28 @@
       return mesh;
     }
 
-    function makeDashedEdge(p1, p2, colorHex = 0x555555, dashSize = 1.4, gapSize = 0.9) {
+    function makeDashedEdge(p1, p2, colorHex = 0x555555, dashSize = 1.3, gapSize = 0.8) {
       const geom = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-      const mat = new THREE.LineDashedMaterial({ color: colorHex, dashSize, gapSize, linewidth: 1.5 });
+      const mat = new THREE.LineDashedMaterial({
+        color: colorHex,
+        dashSize: dashSize,
+        gapSize: gapSize,
+        linewidth: 1.5
+      });
       const line = new THREE.Line(geom, mat);
       line.computeLineDistances();
       return line;
     }
 
-    function makeRightAngleSquare(corner, v1, v2, size = 1.8, color = 0x555555) {
+    function makeRightAngleSquare(corner, v1, v2, size = 1.6, color = 0x666666) {
       const u1 = v1.clone().normalize().multiplyScalar(size);
       const u2 = v2.clone().normalize().multiplyScalar(size);
       const p1 = corner.clone().add(u1);
       const p2 = corner.clone().add(u1).add(u2);
       const p3 = corner.clone().add(u2);
+
       const geom = new THREE.BufferGeometry().setFromPoints([p1, p2, p3]);
-      const mat = new THREE.LineBasicMaterial({ color, linewidth: 2 });
+      const mat = new THREE.LineBasicMaterial({ color: color, linewidth: 2 });
       return new THREE.Line(geom, mat);
     }
 
@@ -368,6 +562,7 @@
       const u2 = dir2.clone().normalize();
       const normal = new THREE.Vector3().crossVectors(u1, u2).normalize();
       const perp = new THREE.Vector3().crossVectors(normal, u1).normalize();
+      
       const radTotal = angleDeg * (Math.PI / 180.0);
       const segments = 24;
       const arcPts = [];
@@ -375,12 +570,23 @@
 
       for (let i = 0; i <= segments; i++) {
         const t = (i / segments) * radTotal;
-        const pt = center.clone().add(u1.clone().multiplyScalar(Math.cos(t) * radius).add(perp.clone().multiplyScalar(Math.sin(t) * radius)));
+        const pt = center.clone().add(
+          u1.clone().multiplyScalar(Math.cos(t) * radius)
+            .add(perp.clone().multiplyScalar(Math.sin(t) * radius))
+        );
         arcPts.push(pt);
+
         if (i < segments) {
           const nextT = ((i + 1) / segments) * radTotal;
-          const nextPt = center.clone().add(u1.clone().multiplyScalar(Math.cos(nextT) * radius).add(perp.clone().multiplyScalar(Math.sin(nextT) * radius)));
-          trianglePositions.push(center.x, center.y, center.z, pt.x, pt.y, pt.z, nextPt.x, nextPt.y, nextPt.z);
+          const nextPt = center.clone().add(
+            u1.clone().multiplyScalar(Math.cos(nextT) * radius)
+              .add(perp.clone().multiplyScalar(Math.sin(nextT) * radius))
+          );
+          trianglePositions.push(
+            center.x, center.y, center.z,
+            pt.x, pt.y, pt.z,
+            nextPt.x, nextPt.y, nextPt.z
+          );
         }
       }
 
@@ -390,70 +596,197 @@
 
       const sectorGeom = new THREE.BufferGeometry();
       sectorGeom.setAttribute('position', new THREE.Float32BufferAttribute(trianglePositions, 3));
-      const sectorMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false });
+      const sectorMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.25,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
       group.add(new THREE.Mesh(sectorGeom, sectorMat));
       return group;
     }
 
     function buildPaperCardGeometry() {
-      modelGroup.add(makeSolidEdge(A_POS, B_POS, 0x1e1e1e));
-      modelGroup.add(makeSolidEdge(A_POS, D_POS, 0x1e1e1e));
-      modelGroup.add(makeSolidEdge(B_POS, C_POS, 0x1e1e1e));
-      modelGroup.add(makeSolidEdge(C_POS, D_POS, 0x1e1e1e));
+      // 1. Horizontal Ground Desk Boundary
+      const deskMargin = 22;
+      const groundDeskPts = [
+        new THREE.Vector3(A_PROJ.x - 14, groundY, A_PROJ.z - 16),
+        new THREE.Vector3(C_PROJ.x + 22, groundY, C_PROJ.z - 16),
+        new THREE.Vector3(C_PROJ.x + 12, groundY, D_POS.z + deskMargin),
+        new THREE.Vector3(A_PROJ.x - 24, groundY, D_POS.z + deskMargin),
+        new THREE.Vector3(A_PROJ.x - 14, groundY, A_PROJ.z - 16)
+      ];
+      for (let i = 0; i < 4; i++) {
+        modelGroup.add(makeDashedEdge(groundDeskPts[i], groundDeskPts[i+1], 0x777777, 2.0, 1.2));
+      }
 
-      modelGroup.add(makeDashedEdge(A_POS, C_POS, 0x555555));
-      modelGroup.add(makeDashedEdge(B_POS, D_POS, 0x555555));
+      // Shaded ground footprint
+      const groundGeom = new THREE.BufferGeometry();
+      groundGeom.setFromPoints([
+        groundDeskPts[0], groundDeskPts[1], groundDeskPts[2],
+        groundDeskPts[0], groundDeskPts[2], groundDeskPts[3]
+      ]);
+      groundGeom.computeVertexNormals();
+      modelGroup.add(new THREE.Mesh(groundGeom, new THREE.MeshBasicMaterial({
+        color: 0xf1f5f9, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false
+      })));
 
-      modelGroup.add(makeDashedEdge(D_POS, D0_POS, 0x10b981));
-      modelGroup.add(makeDashedEdge(C_POS, C_PROJ, 0x10b981));
-      modelGroup.add(makeDashedEdge(D_POS, D_PROJ, 0x10b981));
+      // 2. Paper Card ABCD Edges
+      modelGroup.add(makeSolidEdge(A_POS, B_POS, 0x1e1e1e, 0.28));
+      modelGroup.add(makeSolidEdge(B_POS, C_POS, 0x1e1e1e, 0.28));
+      modelGroup.add(makeSolidEdge(C_POS, D_POS, 0x1e1e1e, 0.28));
+      modelGroup.add(makeSolidEdge(D_POS, A_POS, 0x1e1e1e, 0.28));
 
-      modelGroup.add(makeRightAngleSquare(D0_POS, new THREE.Vector3().subVectors(D_POS, D0_POS), new THREE.Vector3().subVectors(B_POS, D0_POS), 1.6));
-      modelGroup.add(makeRightAngleSquare(C_PROJ, new THREE.Vector3().subVectors(C_POS, C_PROJ), new THREE.Vector3().subVectors(D_POS, C_PROJ), 1.6));
+      // Diagonal AC in card plane
+      modelGroup.add(makeDashedEdge(A_POS, C_POS, 0x4f46e5, 1.2, 0.8));
 
-      const arcTheta = makeInclinationArc(
-        D_PROJ,
-        new THREE.Vector3().subVectors(D_POS, D_PROJ),
-        new THREE.Vector3().subVectors(F_POS, D_PROJ),
+      // 3. Shaded Surface of Paper Card ABCD
+      const cardGeom = new THREE.BufferGeometry();
+      cardGeom.setFromPoints([
+        A_POS, B_POS, C_POS,
+        A_POS, C_POS, D_POS
+      ]);
+      cardGeom.computeVertexNormals();
+      modelGroup.add(new THREE.Mesh(cardGeom, new THREE.MeshBasicMaterial({
+        color: 0x60a5fa, transparent: true, opacity: 0.26, side: THREE.DoubleSide, depthWrite: false
+      })));
+
+      // 4. Perpendicular drops to Ground
+      modelGroup.add(makeSolidEdge(A_POS, A_PROJ, 0xd97706, 0.22));
+      modelGroup.add(makeDashedEdge(D_POS, A_PROJ, 0x0284c7)); // DA' on ground
+      
+      modelGroup.add(makeSolidEdge(C_POS, C_PROJ, 0xd97706, 0.22));
+      modelGroup.add(makeDashedEdge(D_POS, C_PROJ, 0x0284c7)); // DC' on ground
+      
+      modelGroup.add(makeDashedEdge(B_POS, B_PROJ, 0xd97706));
+
+      // Right angle squares at A' and C'
+      modelGroup.add(makeRightAngleSquare(
+        A_PROJ,
+        new THREE.Vector3().subVectors(A_POS, A_PROJ),
+        new THREE.Vector3().subVectors(D_POS, A_PROJ),
+        1.8,
+        0xd97706
+      ));
+
+      modelGroup.add(makeRightAngleSquare(
+        C_PROJ,
+        new THREE.Vector3().subVectors(C_POS, C_PROJ),
+        new THREE.Vector3().subVectors(D_POS, C_PROJ),
+        1.8,
+        0xd97706
+      ));
+
+      // 5. Inclination angle arcs:
+      // (a) Angle between AD and horizontal ground = 39 deg
+      const arcAD = makeInclinationArc(
+        D_POS,
+        new THREE.Vector3().subVectors(A_PROJ, D_POS),
+        new THREE.Vector3().subVectors(A_POS, D_POS),
         5.5,
-        thetaCD_deg,
-        0xff8a00
+        angleAD_ground_deg,
+        0x0284c7
       );
-      modelGroup.add(arcTheta);
+      modelGroup.add(arcAD);
 
-      const baseGeom = new THREE.BufferGeometry().setFromPoints([A_POS, B_POS, C_POS, D_POS]);
-      baseGeom.computeVertexNormals();
-      modelGroup.add(new THREE.Mesh(baseGeom, new THREE.MeshBasicMaterial({
-        color: 0x94a3b8, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false
-      })));
+      // (b) Angle between CD and horizontal ground = 23 deg
+      const arcCD = makeInclinationArc(
+        D_POS,
+        new THREE.Vector3().subVectors(C_PROJ, D_POS),
+        new THREE.Vector3().subVectors(C_POS, D_POS),
+        5.0,
+        angleCD_ground_deg,
+        0x059669
+      );
+      modelGroup.add(arcCD);
 
-      const faceGeom = new THREE.BufferGeometry().setFromPoints([A_POS, B_POS, D_POS]);
-      faceGeom.computeVertexNormals();
-      modelGroup.add(new THREE.Mesh(faceGeom, new THREE.MeshBasicMaterial({
-        color: 0x38bdf8, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false
-      })));
+      // (c) Angle ABC = 52 deg in card plane
+      const arcABC = makeInclinationArc(
+        B_POS,
+        new THREE.Vector3().subVectors(A_POS, B_POS),
+        new THREE.Vector3().subVectors(C_POS, B_POS),
+        5.2,
+        angleABC_deg,
+        0x4f46e5
+      );
+      modelGroup.add(arcABC);
 
-      modelGroup.add(makeGgbPoint(A_POS, 0x1E88E5, 0.8));
-      modelGroup.add(makeGgbPoint(B_POS, 0x1E88E5, 0.8));
-      modelGroup.add(makeGgbPoint(C_POS, 0x1E88E5, 0.8));
-      modelGroup.add(makeGgbPoint(D_POS, 0x1E88E5, 0.8));
-      modelGroup.add(makeGgbPoint(D0_POS, 0x10b981, 0.55));
-      modelGroup.add(makeGgbPoint(F_POS, 0x7c3aed, 0.55));
-      modelGroup.add(makeGgbPoint(D_PROJ, 0x10b981, 0.4));
+      // (d) Angle between AB and horizontal ground
+      modelGroup.add(makeDashedEdge(A_POS, A_LEVEL_B, 0xe11d48));
+      modelGroup.add(makeDashedEdge(B_POS, A_LEVEL_B, 0xe11d48));
+      const arcAB = makeInclinationArc(
+        A_POS,
+        new THREE.Vector3().subVectors(A_LEVEL_B, A_POS),
+        new THREE.Vector3().subVectors(B_POS, A_POS),
+        6.5,
+        thetaAB_deg,
+        0xe11d48
+      );
+      modelGroup.add(arcAB);
+
+      // 6. Authentic GeoGebra Vertex Points
+      modelGroup.add(makeGgbPoint(D_POS, 0x10b981, 0.9)); // Vertex D on ground (emerald)
+      modelGroup.add(makeGgbPoint(A_POS, 0x1E88E5));
+      modelGroup.add(makeGgbPoint(B_POS, 0x1E88E5));
+      modelGroup.add(makeGgbPoint(C_POS, 0x1E88E5));
+      modelGroup.add(makeGgbPoint(A_PROJ, 0xd97706, 0.65));
+      modelGroup.add(makeGgbPoint(C_PROJ, 0xd97706, 0.65));
+      modelGroup.add(makeGgbPoint(B_PROJ, 0xd97706, 0.6));
     }
 
     const labelsData = [
-      { pt: A_POS, text: '<i>A</i>', offset: new THREE.Vector3(-1.5, 0.6, -0.6), cls: 'text-sm font-semibold text-gray-800' },
-      { pt: B_POS, text: '<i>B</i>', offset: new THREE.Vector3(1.6, 0.6, -0.8), cls: 'text-sm font-semibold text-gray-800' },
-      { pt: C_POS, text: '<i>C</i>', offset: new THREE.Vector3(1.2, 0.9, 1.0), cls: 'text-sm font-semibold text-gray-800' },
-      { pt: D_POS, text: '<i>D</i>', offset: new THREE.Vector3(0.8, 1.0, 1.2), cls: 'text-sm font-semibold text-gray-800' },
-      { pt: D0_POS, text: '<i>D₀</i>', offset: new THREE.Vector3(0.8, -0.7, -0.8), cls: 'text-xs font-bold text-emerald-700 bg-white/90 border border-emerald-300 px-1 rounded shadow-xs' },
-      { pt: F_POS, text: '<i>F</i>', offset: new THREE.Vector3(0.6, -0.9, -0.4), cls: 'text-xs font-bold text-violet-700 bg-white/90 border border-violet-300 px-1 rounded shadow-xs' },
-      { pt: D_PROJ.clone().add(new THREE.Vector3(0, 2.8, 1.8)), text: 'θ ≈ 33.9°', offset: new THREE.Vector3(0, 0, 0), cls: 'text-xs font-bold text-orange-900 bg-orange-50 border border-orange-300 px-1.5 py-0.5 rounded shadow-sm' }
+      { pt: D_POS, text: '<i>D</i> (on ground)', offset: new THREE.Vector3(-1.0, -1.8, 1.6), cls: 'text-sm font-bold text-emerald-800 bg-white/95 border border-emerald-400 px-1.5 py-0.5 rounded shadow-sm' },
+      { pt: A_POS, text: '<i>A</i>', offset: new THREE.Vector3(-2.2, 0.8, -1.0), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: B_POS, text: '<i>B</i>', offset: new THREE.Vector3(0, 2.2, 0), cls: 'text-sm font-semibold text-[#6557D2]' },
+      { pt: C_POS, text: '<i>C</i>', offset: new THREE.Vector3(2.4, 0.6, 1.2), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: A_PROJ, text: "<i>A'</i>", offset: new THREE.Vector3(-1.8, -1.5, 0), cls: 'text-xs font-bold text-amber-700 bg-white/90 border border-amber-300 px-1 rounded shadow-xs' },
+      { pt: C_PROJ, text: "<i>C'</i>", offset: new THREE.Vector3(1.8, -1.5, 0), cls: 'text-xs font-bold text-amber-700 bg-white/90 border border-amber-300 px-1 rounded shadow-xs' },
+      
+      // Floating angle badges
+      { 
+        pt: D_POS.clone().add(new THREE.Vector3(-3.5, 1.8, -2.5)), 
+        text: '39° (AD to ground)', 
+        offset: new THREE.Vector3(0, 0, 0), 
+        cls: 'text-[11px] font-bold text-sky-900 bg-sky-50 border border-sky-300 px-1.5 py-0.5 rounded shadow-xs'
+      },
+      { 
+        pt: D_POS.clone().add(new THREE.Vector3(4.0, 1.2, 0)), 
+        text: '23° (CD to ground)', 
+        offset: new THREE.Vector3(0, 0, 0), 
+        cls: 'text-[11px] font-bold text-emerald-900 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 rounded shadow-xs'
+      },
+      { 
+        pt: B_POS.clone().add(new THREE.Vector3(0, -3.8, 0)), 
+        text: '∠ABC = 52°', 
+        offset: new THREE.Vector3(0, 0, 0), 
+        cls: 'text-[11px] font-semibold text-indigo-900 bg-indigo-50 border border-indigo-300 px-1.5 py-0.5 rounded shadow-xs'
+      },
+      { 
+        pt: A_POS.clone().add(new THREE.Vector3(2.5, 3.8, 1.0)), 
+        text: 'θ<sub>AB</sub> ≈ 29.25° (≤ 30°)', 
+        offset: new THREE.Vector3(0, 0, 0), 
+        cls: 'text-xs font-bold text-rose-900 bg-rose-50 border border-rose-400 px-2 py-0.5 rounded shadow-md ring-1 ring-rose-200'
+      },
+      { 
+        pt: C_POS.clone().add(new THREE.Vector3(0, -height_C * 0.45, 0)), 
+        text: 'h<sub>C</sub> ≈ 4.7 cm', 
+        offset: new THREE.Vector3(1.6, 0, 0), 
+        cls: 'text-[11px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-1 rounded shadow-xs'
+      },
+      { 
+        pt: A_POS.clone().add(new THREE.Vector3(0, -height_A * 0.45, 0)), 
+        text: 'h<sub>A</sub> ≈ 11.3 cm', 
+        offset: new THREE.Vector3(-1.8, 0, 0), 
+        cls: 'text-[11px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-1 rounded shadow-xs'
+      }
     ];
 
     const labelNodes = [];
+
     function buildLabels() {
+      overlay.innerHTML = '';
+      labelNodes.length = 0;
       labelsData.forEach(item => {
         const div = document.createElement('div');
         div.className = `absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none math-font select-none transition-opacity duration-150 ${item.cls}`;
@@ -461,82 +794,123 @@
         overlay.appendChild(div);
         labelNodes.push({ el: div, item });
       });
-      renderLabelPositions();
     }
 
     function renderLabelPositions() {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
+      const halfW = container.clientWidth / 2;
+      const halfH = container.clientHeight / 2;
+
       labelNodes.forEach(({ el, item }) => {
-        const vector = item.pt.clone().add(item.offset);
-        const projected = vector.project(camera);
-        const x = (projected.x * 0.5 + 0.5) * width;
-        const y = (-projected.y * 0.5 + 0.5) * height;
+        const pos = item.pt.clone().add(item.offset);
+        pos.project(camera);
+
+        if (pos.z > 1) {
+          el.style.opacity = '0';
+          return;
+        }
+
+        const x = (pos.x * halfW) + halfW;
+        const y = -(pos.y * halfH) + halfH;
         el.style.left = `${x}px`;
         el.style.top = `${y}px`;
-        const z = projected.z;
-        el.style.opacity = z > 1 || z < -1 ? '0' : '1';
+        el.style.opacity = '1';
       });
     }
 
+    function updateCoordinatesDisplay() {
+      const fmt = (v) => `(${v.x.toFixed(2)}, ${(v.y - groundY).toFixed(2)}, ${v.z.toFixed(2)})`;
+      document.getElementById('coord-A').textContent = fmt(A_POS);
+      document.getElementById('coord-B').textContent = fmt(B_POS);
+      document.getElementById('coord-C').textContent = fmt(C_POS);
+      document.getElementById('coord-Aprime').textContent = fmt(A_PROJ);
+      document.getElementById('coord-Cprime').textContent = fmt(C_PROJ);
+      document.getElementById('coord-Bprime').textContent = fmt(B_PROJ);
+    }
+
+    function setCameraView(preset) {
+      if (preset === 'figure') {
+        camera.position.set(-28, 26, 44);
+        if (controls) controls.target.set(0, 0, 0);
+      } else if (preset === 'profile') {
+        camera.position.set(-52, 12, 18);
+        if (controls) controls.target.set(0, 0, 0);
+      } else if (preset === 'top') {
+        camera.position.set(0, 68, 0.001);
+        if (controls) controls.target.set(0, 0, 0);
+      }
+      if (controls) controls.update();
+    }
+
     function bindUI() {
-      document.getElementById('btn-view-home').addEventListener('click', () => setCameraView('figure3'));
-      document.getElementById('btn-view-profile').addEventListener('click', () => setCameraView('profile'));
-      document.getElementById('btn-view-top').addEventListener('click', () => setCameraView('top'));
-      document.getElementById('btn-camera-reset-top').addEventListener('click', () => setCameraView('figure3'));
+      const sidebar = document.getElementById('algebra-panel');
+      const toggleBtn = document.getElementById('btn-toggle-sidebar');
+      const quickToggleBtn = document.getElementById('btn-toggle-algebra-quick');
+      const closeBtn = document.getElementById('btn-close-sidebar');
+
+      let isSidebarOpen = false;
+
+      function toggleSidebar(open) {
+        isSidebarOpen = open;
+        if (isSidebarOpen) {
+          sidebar.classList.remove('-translate-x-full', 'opacity-0', 'pointer-events-none');
+        } else {
+          sidebar.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+        }
+      }
+
+      toggleBtn.addEventListener('click', () => toggleSidebar(!isSidebarOpen));
+      quickToggleBtn.addEventListener('click', () => toggleSidebar(!isSidebarOpen));
+      closeBtn.addEventListener('click', () => toggleSidebar(false));
+
+      // 3D Control Actions
       document.getElementById('btn-zoom-in').addEventListener('click', () => {
-        camera.position.multiplyScalar(0.92);
-        controls.update();
+        camera.position.multiplyScalar(0.85);
       });
       document.getElementById('btn-zoom-out').addEventListener('click', () => {
-        camera.position.multiplyScalar(1.08);
-        controls.update();
+        camera.position.multiplyScalar(1.15);
       });
-      document.getElementById('btn-toggle-grid').addEventListener('click', () => {
-        gridGroup.visible = !gridGroup.visible;
+      document.getElementById('btn-view-home').addEventListener('click', () => setCameraView('figure'));
+      document.getElementById('btn-view-profile').addEventListener('click', () => setCameraView('profile'));
+      document.getElementById('btn-camera-reset-top').addEventListener('click', () => setCameraView('figure'));
+      document.getElementById('btn-view-top').addEventListener('click', () => setCameraView('top'));
+
+      // Grid & Axes Toggles
+      let gridVisible = true;
+      let axesVisible = true;
+      document.getElementById('btn-toggle-grid').addEventListener('click', (e) => {
+        gridVisible = !gridVisible;
+        gridGroup.visible = gridVisible;
+        e.currentTarget.classList.toggle('text-[#6557D2]', gridVisible);
+        e.currentTarget.classList.toggle('text-gray-400', !gridVisible);
       });
-      document.getElementById('btn-toggle-axes').addEventListener('click', () => {
-        axesGroup.visible = !axesGroup.visible;
+
+      document.getElementById('btn-toggle-axes').addEventListener('click', (e) => {
+        axesVisible = !axesVisible;
+        axesGroup.visible = axesVisible;
+        e.currentTarget.classList.toggle('text-[#6557D2]', axesVisible);
+        e.currentTarget.classList.toggle('text-gray-400', !axesVisible);
       });
-      document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
-        const panel = document.getElementById('algebra-panel');
-        const visible = !panel.classList.contains('-translate-x-full');
-        if (visible) {
-          panel.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
-          panel.classList.remove('opacity-100');
-        } else {
-          panel.classList.remove('-translate-x-full', 'opacity-0', 'pointer-events-none');
-          panel.classList.add('opacity-100');
-        }
-      });
-      document.getElementById('btn-close-sidebar').addEventListener('click', () => {
-        const panel = document.getElementById('algebra-panel');
-        panel.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
-        panel.classList.remove('opacity-100');
-      });
-      document.getElementById('btn-toggle-algebra-quick').addEventListener('click', () => {
-        const panel = document.getElementById('algebra-panel');
-        panel.classList.toggle('-translate-x-full');
-        panel.classList.toggle('opacity-0');
-        panel.classList.toggle('pointer-events-none');
-      });
-      window.addEventListener('resize', () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderLabelPositions();
-      });
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
     }
 
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
-      renderLabelPositions();
       renderer.render(scene, camera);
+      renderLabelPositions();
     }
 
-    initThree();
-    animate();
+    window.onload = function() {
+      initThree();
+      animate();
+    };
   </script>
 </body>
 </html>
