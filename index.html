@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoGebra 3D Calculator - Paper Card ABCD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; font-family: 'Roboto', sans-serif; background: #fff; color: #333;
+      user-select: none;
+    }
+    .math-font { font-family: 'STIX Two Text', 'Cambria Math', serif; }
+    .ggb-purple { background-color: #6557D2; }
+    .ggb-border { border-color: #e0e0e0; }
+    #algebra-panel { transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c5c5c5; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a5a5a5; }
+  </style>
+</head>
+<body class="relative w-full h-full bg-white flex flex-col">
+  <header class="h-12 w-full ggb-purple text-white flex items-center justify-between px-3 z-30 shadow-sm shrink-0">
+    <div class="flex items-center gap-2">
+      <button id="btn-toggle-sidebar" title="Toggle Algebra View" class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 transition active:scale-95">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      <div class="flex items-center gap-2 pl-1">
+        <svg class="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="12" rx="10" ry="5.5" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-30 12 12)" />
+          <circle cx="9" cy="9.5" r="1.8" fill="currentColor"/>
+          <circle cx="15" cy="14.5" r="1.8" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
+        </svg>
+        <span class="font-medium text-[15px] tracking-wide hidden sm:inline">GeoGebra 3D Calculator</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-white/20 ml-1 text-white/90 hidden md:inline">Paper Card $ABCD$ &amp; Horizontal Ground</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-0.5 sm:gap-1">
+      <button id="tool-select" class="w-9 h-9 rounded flex items-center justify-center bg-white/20 hover:bg-white/30 text-white transition" title="Move / Rotate">
+        <i class="fa-solid fa-arrow-pointer text-sm"></i>
+      </button>
+      <button class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition hidden md:flex" title="Angle">
+        <i class="fa-solid fa-chart-pie text-xs"></i>
+      </button>
+      <button id="btn-camera-reset-top" class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 text-white/90 transition" title="Reset View">
+        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <button id="btn-toggle-algebra-quick" class="text-xs font-medium px-2.5 py-1 rounded bg-white/15 hover:bg-white/25 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-square-root-variable text-[11px]"></i>
+        <span class="hidden sm:inline">Algebra</span>
+      </button>
+      <button id="btn-settings-gear" title="Settings" class="w-9 h-9 rounded flex items-center justify-center hover:bg-white/15 transition">
+        <i class="fa-solid fa-gear text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="relative flex-1 w-full h-[calc(100%-3rem)] overflow-hidden">
+    <div id="webgl-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing bg-white"></div>
+    <div id="labels-overlay" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+    <div class="absolute right-4 bottom-5 flex flex-col gap-2 z-20">
+      <div class="bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.18)] border border-gray-200 overflow-hidden flex flex-col divide-y divide-gray-100">
+        <button id="btn-zoom-in" title="Zoom In" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-plus text-xs"></i></button>
+        <button id="btn-zoom-out" title="Zoom Out" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-minus text-xs"></i></button>
+        <button id="btn-view-home" title="Figure 3 Perspective" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-house text-xs"></i></button>
+        <button id="btn-view-profile" title="Side Profile (Dihedral 38° Angle)" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-eye text-xs"></i></button>
+        <button id="btn-view-top" title="Top Plan View" class="w-9 h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 active:bg-gray-200 transition"><i class="fa-solid fa-cubes-stacked text-xs"></i></button>
+      </div>
+      <div class="bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.18)] border border-gray-200 overflow-hidden flex flex-col divide-y divide-gray-100">
+        <button id="btn-toggle-grid" title="Toggle Grid Plane" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition"><i class="fa-solid fa-border-all text-xs"></i></button>
+        <button id="btn-toggle-axes" title="Toggle Coordinate Axes" class="w-9 h-9 flex items-center justify-center text-[#6557D2] hover:bg-gray-100 transition"><i class="fa-solid fa-arrows-up-down-left-right text-xs"></i></button>
+      </div>
+    </div>
+
+    <aside id="algebra-panel" class="absolute top-0 left-0 bottom-0 w-88 max-w-[85vw] bg-white border-r ggb-border shadow-xl z-25 flex flex-col -translate-x-full opacity-0 pointer-events-none">
+      <div class="h-10 border-b ggb-border flex items-center justify-between px-3 bg-gray-50/80">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#6557D2]"></span>
+          <span class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Algebra View</span>
+        </div>
+        <button id="btn-close-sidebar" class="w-7 h-7 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-200 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-2 border-b ggb-border bg-white flex items-center gap-2 text-xs text-gray-400">
+        <i class="fa-solid fa-plus text-gray-400 pl-1"></i>
+        <span class="italic text-gray-400">Input...</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto divide-y divide-gray-100 text-xs">
+        <div class="p-3 bg-emerald-50/50 hover:bg-emerald-50/80 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-emerald-800 math-font text-sm flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+              &theta; = &ang;DFD' &approx; 33.91&deg;
+            </span>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Claim Correct</span>
+          </div>
+          <p class="text-gray-600 text-[11px] mt-1.5 leading-relaxed">
+            The angle between edge $CD$ and the horizontal ground is $94 DFD'  a0 a0$.
+          </p>
+        </div>
+
+        <div class="p-3 bg-indigo-50/60 hover:bg-indigo-50/90 transition border-l-2 border-indigo-500">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-indigo-900 math-font text-xs flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block"></span>
+              Extension Method: $CD \cap AB = F$
+            </span>
+            <span class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold">Your Method</span>
+          </div>
+          <div class="text-gray-700 text-[11px] mt-1.5 space-y-1">
+            <p>1. Produce $AB$ and $DC$ to meet at $F$.</p>
+            <p class="pl-2 font-mono text-[10.5px] text-indigo-950">&ang;AFD = 180&deg; - 45&deg; - 70&deg; = <strong>65&deg;</strong></p>
+            <p>2. By Sine Rule in $\triangle ADF$</p>
+            <p class="pl-2 font-mono text-[10.5px] text-indigo-950">DF = 80 &times; sin 45&deg; / sin 65&deg; &approx; <strong>62.42 cm</strong></p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-blue-50/40 hover:bg-blue-50/70 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-blue-700 math-font text-sm flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+              <i>d</i>(D, Ground) = 34.83 cm
+            </span>
+            <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">b(i)</span>
+          </div>
+          <p class="text-gray-500 text-[11px] mt-1">$h_D = AD \sin 45^\circ \times \sin 38^\circ = 40\sqrt{2} \sin 38^\circ \approx 34.83\text{ cm}$.</p>
+        </div>
+
+        <div class="p-3 space-y-2 bg-gray-50/50">
+          <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Vertices &amp; Key Coordinates</span>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-700">A</span><span>(0.00, 0.00, 0.00)</span></div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">B</span><span>(50.00, 0.00, 0.00)</span></div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">C</span><span>(71.18, 15.54, 19.89)</span></div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-blue-600">D</span><span>(56.57, 34.83, 44.58)</span></div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-gray-200"><span class="math-font font-semibold text-amber-700">D' (Foot on ground)</span><span>(56.57, 0.00, 44.58)</span></div>
+          <div class="flex items-center justify-between text-[11px] font-mono text-gray-700 bg-white p-1.5 rounded border border-indigo-300 bg-indigo-50/40"><span class="math-font font-semibold text-indigo-700">F (Intersection on ground)</span><span>(82.95, 0.00, 0.00)</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="absolute left-4 bottom-4 z-20 pointer-events-none">
+      <div class="bg-white/90 backdrop-blur border border-gray-200 px-3 py-1.5 rounded-md shadow-sm text-[11px] text-gray-600 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#6557D2]"></span>
+        <span>Left-click &amp; drag to rotate &bull; Right-click to pan &bull; Scroll to zoom</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const AB_len = 50.0;
+    const AD_len = 80.0;
+    const angleBAD_deg = 45.0;
+    const angleBAD_rad = angleBAD_deg * (Math.PI / 180.0);
+    const angleADC_deg = 70.0;
+    const angleBCD_deg = 115.0;
+
+    const BD_sq = AB_len * AB_len + AD_len * AD_len - 2.0 * AB_len * AD_len * Math.cos(angleBAD_rad);
+    const BD_len = Math.sqrt(BD_sq);
+
+    const cosADB = (AD_len * AD_len + BD_sq - AB_len * AB_len) / (2.0 * AD_len * BD_len);
+    const angleADB_rad = Math.acos(cosADB);
+    const angleADB_deg = angleADB_rad * (180.0 / Math.PI);
+
+    const angleBDC_deg = angleADC_deg - angleADB_deg;
+    const angleBDC_rad = angleBDC_deg * (Math.PI / 180.0);
+    const angleBCD_rad = angleBCD_deg * (Math.PI / 180.0);
+    const angleDBC_deg = 180.0 - angleBCD_deg - angleBDC_deg;
+    const angleDBC_rad = angleDBC_deg * (Math.PI / 180.0);
+
+    const BC_len = (BD_len * Math.sin(angleBDC_rad)) / Math.sin(angleBCD_rad);
+    const CD_len = (BD_len * Math.sin(angleDBC_rad)) / Math.sin(angleBCD_rad);
+
+    const tilt_deg = 38.0;
+    const tilt_rad = tilt_deg * (Math.PI / 180.0);
+
+    const D_local_x = AD_len * Math.cos(angleBAD_rad);
+    const D_local_y = AD_len * Math.sin(angleBAD_rad);
+
+    const angleBC_ray_deg = 50.0;
+    const angleBC_ray_rad = angleBC_ray_deg * (Math.PI / 180.0);
+    const C_local_x = AB_len + BC_len * Math.cos(angleBC_ray_rad);
+    const C_local_y = BC_len * Math.sin(angleBC_ray_rad);
+
+    const height_D = D_local_y * Math.sin(tilt_rad);
+    const height_C = C_local_y * Math.sin(tilt_rad);
+
+    const deltaHeight_CD = height_D - height_C;
+    const sinThetaCD = deltaHeight_CD / CD_len;
+    const thetaCD_rad = Math.asin(sinThetaCD);
+    const thetaCD_deg = thetaCD_rad * (180.0 / Math.PI);
+
+    const angleAFD_deg = 65.0;
+    const angleAFD_rad = angleAFD_deg * (Math.PI / 180.0);
+    const AF_len = (AD_len * Math.sin(angleADC_deg * Math.PI / 180.0)) / Math.sin(angleAFD_rad);
+    const DF_len = (AD_len * Math.sin(angleBAD_rad)) / Math.sin(angleAFD_rad);
+
+    const centerOffsetX = 45.0;
+    const centerOffsetZ = 20.0;
+
+    const A_POS = new THREE.Vector3(0 - centerOffsetX, 0, 0 - centerOffsetZ);
+    const B_POS = new THREE.Vector3(AB_len - centerOffsetX, 0, 0 - centerOffsetZ);
+    const C_POS = new THREE.Vector3(C_local_x - centerOffsetX, height_C, C_local_y * Math.cos(tilt_rad) - centerOffsetZ);
+    const D_POS = new THREE.Vector3(D_local_x - centerOffsetX, height_D, D_local_y * Math.cos(tilt_rad) - centerOffsetZ);
+    const F_POS = new THREE.Vector3(AF_len - centerOffsetX, 0, 0 - centerOffsetZ);
+    const D0_POS = new THREE.Vector3(D_local_x - centerOffsetX, 0, 0 - centerOffsetZ);
+    const C_PROJ = new THREE.Vector3(C_POS.x, 0, C_POS.z);
+    const D_PROJ = new THREE.Vector3(D_POS.x, 0, D_POS.z);
+    const C_LEVEL_D = new THREE.Vector3(D_POS.x, height_C, D_POS.z);
+
+    let scene, camera, renderer, controls;
+    const container = document.getElementById('webgl-container');
+    const overlay = document.getElementById('labels-overlay');
+    const gridGroup = new THREE.Group();
+    const axesGroup = new THREE.Group();
+    const modelGroup = new THREE.Group();
+
+    function setCameraView(mode) {
+      if (mode === 'figure3') {
+        camera.position.set(60, 38, 80);
+      } else if (mode === 'profile') {
+        camera.position.set(100, 20, 5);
+      } else if (mode === 'top') {
+        camera.position.set(0, 120, 0.001);
+      }
+      controls.target.set(0, height_D * 0.35, 0);
+      controls.update();
+    }
+
+    function initThree() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xffffff);
+
+      camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 1000);
+      setCameraView('figure3');
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.target.set(0, height_D * 0.35, 0);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.45);
+      dirLight.position.set(50, 90, 50);
+      scene.add(dirLight);
+
+      scene.add(gridGroup);
+      scene.add(axesGroup);
+      scene.add(modelGroup);
+
+      createGeoGebraGrid();
+      createGeoGebraAxes();
+      buildPaperCardGeometry();
+      buildLabels();
+      bindUI();
+    }
+
+    function createGeoGebraGrid() {
+      const size = 70;
+      const stepMajor = 10;
+      const stepMinor = 2;
+
+      const minorPts = [];
+      for (let i = -size; i <= size; i += stepMinor) {
+        if (i % stepMajor !== 0) {
+          minorPts.push(new THREE.Vector3(i, 0, -size), new THREE.Vector3(i, 0, size));
+          minorPts.push(new THREE.Vector3(-size, 0, i), new THREE.Vector3(size, 0, i));
+        }
+      }
+      const geomMinor = new THREE.BufferGeometry().setFromPoints(minorPts);
+      const matMinor = new THREE.LineBasicMaterial({ color: 0xf0f0f0, linewidth: 1 });
+      gridGroup.add(new THREE.LineSegments(geomMinor, matMinor));
+
+      const majorPts = [];
+      for (let i = -size; i <= size; i += stepMajor) {
+        majorPts.push(new THREE.Vector3(i, 0, -size), new THREE.Vector3(i, 0, size));
+        majorPts.push(new THREE.Vector3(-size, 0, i), new THREE.Vector3(size, 0, i));
+      }
+      const geomMajor = new THREE.BufferGeometry().setFromPoints(majorPts);
+      const matMajor = new THREE.LineBasicMaterial({ color: 0xd8d8d8, linewidth: 1 });
+      gridGroup.add(new THREE.LineSegments(geomMajor, matMajor));
+    }
+
+    function createGeoGebraAxes() {
+      const axisLen = 65;
+      const axisColor = 0x555555;
+      function addAxis(from, to) {
+        const geom = new THREE.BufferGeometry().setFromPoints([from, to]);
+        const mat = new THREE.LineBasicMaterial({ color: axisColor, linewidth: 2 });
+        axesGroup.add(new THREE.Line(geom, mat));
+      }
+      addAxis(new THREE.Vector3(-axisLen, 0, 0), new THREE.Vector3(axisLen, 0, 0));
+      addAxis(new THREE.Vector3(0, 0, -axisLen), new THREE.Vector3(0, 0, axisLen));
+      addAxis(new THREE.Vector3(0, -2, 0), new THREE.Vector3(0, height_D + 12, 0));
+    }
+
+    function makeGgbPoint(pos, colorHex = 0x1E88E5, radius = 0.85) {
+      const g = new THREE.Group();
+      const geom = new THREE.SphereGeometry(radius, 20, 20);
+      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+      const sphere = new THREE.Mesh(geom, mat);
+      const edgeGeom = new THREE.SphereGeometry(radius * 1.08, 12, 12);
+      const edgeMat = new THREE.MeshBasicMaterial({ color: 0x222222, wireframe: true, transparent: true, opacity: 0.35 });
+      const edge = new THREE.Mesh(edgeGeom, edgeMat);
+      g.add(sphere);
+      g.add(edge);
+      g.position.copy(pos);
+      return g;
+    }
+
+    function makeSolidEdge(p1, p2, colorHex = 0x222222, thickness = 0.24) {
+      const dir = new THREE.Vector3().subVectors(p2, p1);
+      const len = dir.length();
+      const geom = new THREE.CylinderGeometry(thickness, thickness, len, 16);
+      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+      return mesh;
+    }
+
+    function makeDashedEdge(p1, p2, colorHex = 0x555555, dashSize = 1.4, gapSize = 0.9) {
+      const geom = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+      const mat = new THREE.LineDashedMaterial({ color: colorHex, dashSize, gapSize, linewidth: 1.5 });
+      const line = new THREE.Line(geom, mat);
+      line.computeLineDistances();
+      return line;
+    }
+
+    function makeRightAngleSquare(corner, v1, v2, size = 1.8, color = 0x555555) {
+      const u1 = v1.clone().normalize().multiplyScalar(size);
+      const u2 = v2.clone().normalize().multiplyScalar(size);
+      const p1 = corner.clone().add(u1);
+      const p2 = corner.clone().add(u1).add(u2);
+      const p3 = corner.clone().add(u2);
+      const geom = new THREE.BufferGeometry().setFromPoints([p1, p2, p3]);
+      const mat = new THREE.LineBasicMaterial({ color, linewidth: 2 });
+      return new THREE.Line(geom, mat);
+    }
+
+    function makeInclinationArc(center, dir1, dir2, radius, angleDeg, colorHex) {
+      const group = new THREE.Group();
+      const u1 = dir1.clone().normalize();
+      const u2 = dir2.clone().normalize();
+      const normal = new THREE.Vector3().crossVectors(u1, u2).normalize();
+      const perp = new THREE.Vector3().crossVectors(normal, u1).normalize();
+      const radTotal = angleDeg * (Math.PI / 180.0);
+      const segments = 24;
+      const arcPts = [];
+      const trianglePositions = [];
+
+      for (let i = 0; i <= segments; i++) {
+        const t = (i / segments) * radTotal;
+        const pt = center.clone().add(u1.clone().multiplyScalar(Math.cos(t) * radius).add(perp.clone().multiplyScalar(Math.sin(t) * radius)));
+        arcPts.push(pt);
+        if (i < segments) {
+          const nextT = ((i + 1) / segments) * radTotal;
+          const nextPt = center.clone().add(u1.clone().multiplyScalar(Math.cos(nextT) * radius).add(perp.clone().multiplyScalar(Math.sin(nextT) * radius)));
+          trianglePositions.push(center.x, center.y, center.z, pt.x, pt.y, pt.z, nextPt.x, nextPt.y, nextPt.z);
+        }
+      }
+
+      const lineGeom = new THREE.BufferGeometry().setFromPoints(arcPts);
+      const lineMat = new THREE.LineBasicMaterial({ color: colorHex, linewidth: 2 });
+      group.add(new THREE.Line(lineGeom, lineMat));
+
+      const sectorGeom = new THREE.BufferGeometry();
+      sectorGeom.setAttribute('position', new THREE.Float32BufferAttribute(trianglePositions, 3));
+      const sectorMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false });
+      group.add(new THREE.Mesh(sectorGeom, sectorMat));
+      return group;
+    }
+
+    function buildPaperCardGeometry() {
+      modelGroup.add(makeSolidEdge(A_POS, B_POS, 0x1e1e1e));
+      modelGroup.add(makeSolidEdge(A_POS, D_POS, 0x1e1e1e));
+      modelGroup.add(makeSolidEdge(B_POS, C_POS, 0x1e1e1e));
+      modelGroup.add(makeSolidEdge(C_POS, D_POS, 0x1e1e1e));
+
+      modelGroup.add(makeDashedEdge(A_POS, C_POS, 0x555555));
+      modelGroup.add(makeDashedEdge(B_POS, D_POS, 0x555555));
+
+      modelGroup.add(makeDashedEdge(D_POS, D0_POS, 0x10b981));
+      modelGroup.add(makeDashedEdge(C_POS, C_PROJ, 0x10b981));
+      modelGroup.add(makeDashedEdge(D_POS, D_PROJ, 0x10b981));
+
+      modelGroup.add(makeRightAngleSquare(D0_POS, new THREE.Vector3().subVectors(D_POS, D0_POS), new THREE.Vector3().subVectors(B_POS, D0_POS), 1.6));
+      modelGroup.add(makeRightAngleSquare(C_PROJ, new THREE.Vector3().subVectors(C_POS, C_PROJ), new THREE.Vector3().subVectors(D_POS, C_PROJ), 1.6));
+
+      const arcTheta = makeInclinationArc(
+        D_PROJ,
+        new THREE.Vector3().subVectors(D_POS, D_PROJ),
+        new THREE.Vector3().subVectors(F_POS, D_PROJ),
+        5.5,
+        thetaCD_deg,
+        0xff8a00
+      );
+      modelGroup.add(arcTheta);
+
+      const baseGeom = new THREE.BufferGeometry().setFromPoints([A_POS, B_POS, C_POS, D_POS]);
+      baseGeom.computeVertexNormals();
+      modelGroup.add(new THREE.Mesh(baseGeom, new THREE.MeshBasicMaterial({
+        color: 0x94a3b8, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false
+      })));
+
+      const faceGeom = new THREE.BufferGeometry().setFromPoints([A_POS, B_POS, D_POS]);
+      faceGeom.computeVertexNormals();
+      modelGroup.add(new THREE.Mesh(faceGeom, new THREE.MeshBasicMaterial({
+        color: 0x38bdf8, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false
+      })));
+
+      modelGroup.add(makeGgbPoint(A_POS, 0x1E88E5, 0.8));
+      modelGroup.add(makeGgbPoint(B_POS, 0x1E88E5, 0.8));
+      modelGroup.add(makeGgbPoint(C_POS, 0x1E88E5, 0.8));
+      modelGroup.add(makeGgbPoint(D_POS, 0x1E88E5, 0.8));
+      modelGroup.add(makeGgbPoint(D0_POS, 0x10b981, 0.55));
+      modelGroup.add(makeGgbPoint(F_POS, 0x7c3aed, 0.55));
+      modelGroup.add(makeGgbPoint(D_PROJ, 0x10b981, 0.4));
+    }
+
+    const labelsData = [
+      { pt: A_POS, text: '<i>A</i>', offset: new THREE.Vector3(-1.5, 0.6, -0.6), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: B_POS, text: '<i>B</i>', offset: new THREE.Vector3(1.6, 0.6, -0.8), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: C_POS, text: '<i>C</i>', offset: new THREE.Vector3(1.2, 0.9, 1.0), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: D_POS, text: '<i>D</i>', offset: new THREE.Vector3(0.8, 1.0, 1.2), cls: 'text-sm font-semibold text-gray-800' },
+      { pt: D0_POS, text: '<i>D₀</i>', offset: new THREE.Vector3(0.8, -0.7, -0.8), cls: 'text-xs font-bold text-emerald-700 bg-white/90 border border-emerald-300 px-1 rounded shadow-xs' },
+      { pt: F_POS, text: '<i>F</i>', offset: new THREE.Vector3(0.6, -0.9, -0.4), cls: 'text-xs font-bold text-violet-700 bg-white/90 border border-violet-300 px-1 rounded shadow-xs' },
+      { pt: D_PROJ.clone().add(new THREE.Vector3(0, 2.8, 1.8)), text: 'θ ≈ 33.9°', offset: new THREE.Vector3(0, 0, 0), cls: 'text-xs font-bold text-orange-900 bg-orange-50 border border-orange-300 px-1.5 py-0.5 rounded shadow-sm' }
+    ];
+
+    const labelNodes = [];
+    function buildLabels() {
+      labelsData.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none math-font select-none transition-opacity duration-150 ${item.cls}`;
+        div.innerHTML = item.text;
+        overlay.appendChild(div);
+        labelNodes.push({ el: div, item });
+      });
+      renderLabelPositions();
+    }
+
+    function renderLabelPositions() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      labelNodes.forEach(({ el, item }) => {
+        const vector = item.pt.clone().add(item.offset);
+        const projected = vector.project(camera);
+        const x = (projected.x * 0.5 + 0.5) * width;
+        const y = (-projected.y * 0.5 + 0.5) * height;
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        const z = projected.z;
+        el.style.opacity = z > 1 || z < -1 ? '0' : '1';
+      });
+    }
+
+    function bindUI() {
+      document.getElementById('btn-view-home').addEventListener('click', () => setCameraView('figure3'));
+      document.getElementById('btn-view-profile').addEventListener('click', () => setCameraView('profile'));
+      document.getElementById('btn-view-top').addEventListener('click', () => setCameraView('top'));
+      document.getElementById('btn-camera-reset-top').addEventListener('click', () => setCameraView('figure3'));
+      document.getElementById('btn-zoom-in').addEventListener('click', () => {
+        camera.position.multiplyScalar(0.92);
+        controls.update();
+      });
+      document.getElementById('btn-zoom-out').addEventListener('click', () => {
+        camera.position.multiplyScalar(1.08);
+        controls.update();
+      });
+      document.getElementById('btn-toggle-grid').addEventListener('click', () => {
+        gridGroup.visible = !gridGroup.visible;
+      });
+      document.getElementById('btn-toggle-axes').addEventListener('click', () => {
+        axesGroup.visible = !axesGroup.visible;
+      });
+      document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+        const panel = document.getElementById('algebra-panel');
+        const visible = !panel.classList.contains('-translate-x-full');
+        if (visible) {
+          panel.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+          panel.classList.remove('opacity-100');
+        } else {
+          panel.classList.remove('-translate-x-full', 'opacity-0', 'pointer-events-none');
+          panel.classList.add('opacity-100');
+        }
+      });
+      document.getElementById('btn-close-sidebar').addEventListener('click', () => {
+        const panel = document.getElementById('algebra-panel');
+        panel.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+        panel.classList.remove('opacity-100');
+      });
+      document.getElementById('btn-toggle-algebra-quick').addEventListener('click', () => {
+        const panel = document.getElementById('algebra-panel');
+        panel.classList.toggle('-translate-x-full');
+        panel.classList.toggle('opacity-0');
+        panel.classList.toggle('pointer-events-none');
+      });
+      window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderLabelPositions();
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderLabelPositions();
+      renderer.render(scene, camera);
+    }
+
+    initThree();
+    animate();
+  </script>
+</body>
+</html>
